@@ -45,4 +45,18 @@ describe('App', () => {
     app.setFilter(new Event('click'), 'completed');
     expect(app.filteredTodos).toEqual(app.todos);
   });
+
+  it('should rename todos and delete them when the title is empty', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+
+    app.addTodo({ value: 'JS' } as HTMLInputElement);
+    app.renameTodo({ id: 1, title: 'Angular' });
+
+    expect(app.todos[0].title).toBe('Angular');
+
+    app.renameTodo({ id: 1, title: '   ' });
+
+    expect(app.todos).toEqual([]);
+  });
 });

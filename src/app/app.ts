@@ -1,27 +1,25 @@
 import { Component } from '@angular/core';
 
-type TodoFilter = 'all' | 'active' | 'completed';
+import { Todo } from './components/todo/todo';
+import { Todo as TodoModel } from './types/todo';
 
-interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-}
+type TodoFilter = 'all' | 'active' | 'completed';
 
 @Component({
   selector: 'app-root',
+  imports: [Todo],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
-  todos: Todo[] = [];
+  todos: TodoModel[] = [];
   filter: TodoFilter = 'all';
   errorMessage = '';
 
   private nextTodoId = 1;
   private errorTimer: ReturnType<typeof setTimeout> | null = null;
 
-  get filteredTodos(): Todo[] {
+  get filteredTodos(): TodoModel[] {
     switch (this.filter) {
       case 'active':
         return this.todos.filter(todo => !todo.completed);
@@ -76,6 +74,21 @@ export class App {
 
   deleteTodo(todoId: number): void {
     this.todos = this.todos.filter(todo => todo.id !== todoId);
+  }
+
+  renameTodo({ id, title }: { id: number; title: string }): void {
+    const normalizedTitle = title.trim();
+
+    if (!normalizedTitle) {
+      this.deleteTodo(id);
+      return;
+    }
+
+    this.todos = this.todos.map(todo => (
+      todo.id === id
+        ? { ...todo, title: normalizedTitle }
+        : todo
+    ));
   }
 
   toggleAllTodos(): void {

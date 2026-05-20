@@ -1,0 +1,48 @@
+<div
+  class="todo"
+  [class.completed]="todo().completed"
+  data-cy="Todo"
+>
+  <label class="todo__status-label">
+    <input
+      class="todo__status"
+      type="checkbox"
+      [checked]="todo().completed"
+      (change)="toggle.emit(todo().id)"
+    />
+  </label>
+
+  @if (editing()) {
+    <form (submit)="$event.preventDefault(); saveTitle(titleField)">
+      <input
+        #titleField
+        class="todo__title-field"
+        type="text"
+        name="title"
+        autocomplete="off"
+        placeholder="Empty todo will be deleted"
+        [value]="todo().title"
+        (keydown.escape)="stopEditing()"
+        (blur)="saveTitle(titleField)"
+      />
+    </form>
+  } @else {
+    <span
+      class="todo__title"
+      data-cy="TodoTitle"
+      (dblclick)="startEditing()"
+    >
+      {{ todo().title }}
+    </span>
+
+    <button
+      type="button"
+      class="todo__remove"
+      data-cy="TodoDelete"
+      aria-label="Delete todo"
+      (click)="delete.emit(todo().id)"
+    >
+      x
+    </button>
+  }
+</div>
