@@ -13,6 +13,8 @@ describe('Header', () => {
 
     fixture = TestBed.createComponent(Header);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('showToggleAll', false);
+    fixture.componentRef.setInput('allTodosCompleted', false);
     await fixture.whenStable();
   });
 

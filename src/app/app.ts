@@ -1,15 +1,21 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
+import { Footer } from './components/footer/footer';
+import { Header } from './components/header/header';
 import { Todo } from './components/todo/todo';
-import { Todo as TodoModel } from './types/todo';
-
-type TodoFilter = 'all' | 'active' | 'completed';
+import { TodosService } from './services/todos';
+import type {
+  Todo as TodoModel,
+  TodoFilter,
+  TodoRename,
+} from './types/todo';
 
 @Component({
   selector: 'app-root',
-  imports: [Todo],
+  imports: [Footer, Header, Todo],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
   todos: TodoModel[] = [];
@@ -18,6 +24,11 @@ export class App {
 
   private nextTodoId = 1;
   private errorTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor(private todosService: TodosService) {
+    this.todos = this.todosService.getTodos();
+    this.nextTodoId = this.getNextTodoId();
+  }
 
   get filteredTodos(): TodoModel[] {
     switch (this.filter) {
@@ -44,39 +55,38 @@ export class App {
     return this.todos.length > 0 && this.activeTodosCount === 0;
   }
 
-  addTodo(input: HTMLInputElement): void {
-    const title = input.value.trim();
+  addTodo(title: string): void {
+    const normalizedTitle = title.trim();
 
-    if (!title) {
+    if (!normalizedTitle) {
       this.setErrorMessage('Title should not be empty');
       return;
     }
 
-    this.todos = [
+    this.setTodos([
       ...this.todos,
       {
         id: this.nextTodoId,
-        title,
+        title: normalizedTitle,
         completed: false,
       },
-    ];
+    ]);
     this.nextTodoId += 1;
-    input.value = '';
   }
 
   toggleTodo(todoId: number): void {
-    this.todos = this.todos.map(todo => (
+    this.setTodos(this.todos.map(todo => (
       todo.id === todoId
         ? { ...todo, completed: !todo.completed }
         : todo
-    ));
+    )));
   }
 
   deleteTodo(todoId: number): void {
-    this.todos = this.todos.filter(todo => todo.id !== todoId);
+    this.setTodos(this.todos.filter(todo => todo.id !== todoId));
   }
 
-  renameTodo({ id, title }: { id: number; title: string }): void {
+  renameTodo({ id, title }: TodoRename): void {
     const normalizedTitle = title.trim();
 
     if (!normalizedTitle) {
@@ -84,28 +94,27 @@ export class App {
       return;
     }
 
-    this.todos = this.todos.map(todo => (
+    this.setTodos(this.todos.map(todo => (
       todo.id === id
         ? { ...todo, title: normalizedTitle }
         : todo
-    ));
+    )));
   }
 
   toggleAllTodos(): void {
     const shouldComplete = !this.allTodosCompleted;
 
-    this.todos = this.todos.map(todo => ({
+    this.setTodos(this.todos.map(todo => ({
       ...todo,
       completed: shouldComplete,
-    }));
+    })));
   }
 
   clearCompletedTodos(): void {
-    this.todos = this.todos.filter(todo => !todo.completed);
+    this.setTodos(this.todos.filter(todo => !todo.completed));
   }
 
-  setFilter(event: Event, filter: TodoFilter): void {
-    event.preventDefault();
+  setFilter(filter: TodoFilter): void {
     this.filter = filter;
   }
 
@@ -122,5 +131,16 @@ export class App {
         this.errorTimer = null;
       }, 3000);
     }
+  }
+
+  private setTodos(todos: TodoModel[]): void {
+    this.todos = todos;
+    this.todosService.saveTodos(this.todos);
+  }
+
+  private getNextTodoId(): number {
+    const maxTodoId = Math.max(0, ...this.todos.map(todo => todo.id));
+
+    return maxTodoId + 1;
   }
 }

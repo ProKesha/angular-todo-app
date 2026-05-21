@@ -1,1 +1,21 @@
-<p>header works!</p>
+<header class="todoapp__header">
+  @if (showToggleAll()) {
+    <button
+      type="button"
+      class="todoapp__toggle-all"
+      [class.active]="allTodosCompleted()"
+      aria-label="Toggle all todos"
+      (click)="toggleAll.emit()"
+    ></button>
+  }
+
+  <input
+    #newTodoField
+    class="todoapp__new-todo"
+    type="text"
+    placeholder="What needs to be done?"
+    autocomplete="off"
+    data-cy="NewTodoField"
+    (keydown.enter)="addTodo(newTodoField)"
+  />
+</header>

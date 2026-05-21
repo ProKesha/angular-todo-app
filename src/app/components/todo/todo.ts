@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   effect,
@@ -8,20 +9,24 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { Todo as TodoModel } from '../../types/todo';
+import type {
+  Todo as TodoModel,
+  TodoRename,
+} from '../../types/todo';
 
 @Component({
   selector: 'app-todo',
   imports: [],
   templateUrl: './todo.html',
   styleUrl: './todo.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Todo {
   todo = input.required<TodoModel>();
 
   toggle = output<number>();
   delete = output<number>();
-  rename = output<{ id: number; title: string }>();
+  rename = output<TodoRename>();
 
   editing = signal(false);
   titleField = viewChild<ElementRef<HTMLInputElement>>('titleField');
@@ -40,6 +45,12 @@ export class Todo {
 
   stopEditing(): void {
     this.editing.set(false);
+  }
+
+  cancelEditing(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.stopEditing();
   }
 
   saveTitle(input: HTMLInputElement): void {

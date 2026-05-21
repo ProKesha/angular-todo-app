@@ -13,6 +13,9 @@ describe('Footer', () => {
 
     fixture = TestBed.createComponent(Footer);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('activeTodosCount', 0);
+    fixture.componentRef.setInput('completedTodosCount', 0);
+    fixture.componentRef.setInput('filter', 'all');
     await fixture.whenStable();
   });
 

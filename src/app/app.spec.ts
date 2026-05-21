@@ -3,6 +3,8 @@ import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
+    localStorage.clear();
+
     await TestBed.configureTestingModule({
       imports: [App],
     }).compileComponents();
@@ -24,9 +26,7 @@ describe('App', () => {
   it('should add, toggle, and filter todos', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
-    const input = { value: 'Learn Angular' } as HTMLInputElement;
-
-    app.addTodo(input);
+    app.addTodo('Learn Angular');
     expect(app.todos).toEqual([
       {
         id: 1,
@@ -34,15 +34,14 @@ describe('App', () => {
         completed: false,
       },
     ]);
-    expect(input.value).toBe('');
 
     app.toggleTodo(1);
     expect(app.todos[0].completed).toBe(true);
 
-    app.setFilter(new Event('click'), 'active');
+    app.setFilter('active');
     expect(app.filteredTodos).toEqual([]);
 
-    app.setFilter(new Event('click'), 'completed');
+    app.setFilter('completed');
     expect(app.filteredTodos).toEqual(app.todos);
   });
 
@@ -50,7 +49,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
 
-    app.addTodo({ value: 'JS' } as HTMLInputElement);
+    app.addTodo('JS');
     app.renameTodo({ id: 1, title: 'Angular' });
 
     expect(app.todos[0].title).toBe('Angular');
@@ -58,5 +57,30 @@ describe('App', () => {
     app.renameTodo({ id: 1, title: '   ' });
 
     expect(app.todos).toEqual([]);
+  });
+
+  it('should load saved todos from localStorage', () => {
+    localStorage.setItem('todos', JSON.stringify([
+      {
+        id: 7,
+        title: 'Saved todo',
+        completed: false,
+      },
+    ]));
+
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+
+    expect(app.todos).toEqual([
+      {
+        id: 7,
+        title: 'Saved todo',
+        completed: false,
+      },
+    ]);
+
+    app.addTodo('Next todo');
+
+    expect(app.todos[1].id).toBe(8);
   });
 });

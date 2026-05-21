@@ -22,7 +22,7 @@
         autocomplete="off"
         placeholder="Empty todo will be deleted"
         [value]="todo().title"
-        (keydown.escape)="stopEditing()"
+        (keydown.escape)="cancelEditing($event)"
         (blur)="saveTitle(titleField)"
       />
     </form>
